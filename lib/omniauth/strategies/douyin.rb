@@ -13,7 +13,7 @@ module OmniAuth
       # initializing your consumer from the OAuth gem.
       option :client_options,
              { site: 'https://open.douyin.com', authorize_url: '/platform/oauth/connect/',
-               token_url: '/oauth/access_token/', token_method: :get }
+               token_url: '/oauth/access_token/', token_method: :get, raise_errors: false }
       option :token_params, { parse: :json }
 
       def request_phase
@@ -38,12 +38,12 @@ module OmniAuth
       # additional calls (if the user id is returned with the token
       # or as a URI parameter). This may not be possible with all
       # providers.
-      uid { raw_info['openid'] }
+      uid { raw_info['open_id'] }
 
       info do
         {
           province: raw_info['province'],
-          unionid: raw_info['unionid'],
+          union_id: raw_info['union_id'],
           avatar: raw_info['avatar'],
           e_account_role: raw_info['e_account_role'],
           nickname: raw_info['nickname'],
@@ -60,8 +60,9 @@ module OmniAuth
 
       # @see https://open.douyin.com/platform/doc/6848806527751489550
       def raw_info
-        @uid ||= access_token['openid']
-        @raw_info ||= access_token.get('/oauth/userinfo/', params: { 'openid' => @uid },
+        @uid ||= access_token['open_id']
+        access_token.options[:mode] = :query
+        @raw_info ||= access_token.get('/oauth/userinfo/', params: { open_id: @uid },
                                                            parse: :json).parsed['data']
       rescue StandardError => e
         raise e
