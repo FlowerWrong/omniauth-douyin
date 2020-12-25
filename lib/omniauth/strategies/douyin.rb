@@ -3,6 +3,8 @@ require 'omniauth-oauth2'
 module OmniAuth
   module Strategies
     class Douyin < OmniAuth::Strategies::OAuth2
+      DEFAULT_SCOPE = 'user_info'.freeze
+
       # Give your strategy a name.
       option :name, 'douyin'
 
@@ -11,9 +13,19 @@ module OmniAuth
       option :client_options,
              { site: 'https://open.douyin.com', authorize_url: '/platform/oauth/connect/',
                token_url: '/oauth/access_token/', token_method: :get }
-
-      option :authorize_params, { scope: 'user_info' }
       option :token_params, { parse: :json }
+
+      def request_phase
+        params = client.auth_code.authorize_params.merge(authorize_params)
+        params['client_key'] = params.delete('client_id')
+        redirect client.authorize_url(params)
+      end
+
+      def authorize_params
+        super.tap do |params|
+          params[:scope] = request.params['scope'] || params[:scope] || DEFAULT_SCOPE
+        end
+      end
 
       # You may specify that your strategy should use PKCE by setting
       # the pkce option to true: https://tools.ietf.org/html/rfc7636
