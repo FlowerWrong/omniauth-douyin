@@ -1,8 +1,7 @@
 require 'omniauth/douyin/version'
+require 'omniauth/strategies/douyin'
 
 module Omniauth
   module Douyin
-    class Error < StandardError; end
-    # Your code goes here...
   end
 end

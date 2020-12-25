@@ -9,11 +9,15 @@ module OmniAuth
       # This is where you pass the options you would pass when
       # initializing your consumer from the OAuth gem.
       option :client_options,
-             { site: 'https://open.douyin.com', token_url: '/oauth/access_token/', token_method: :get }
+             { site: 'https://open.douyin.com', authorize_url: '/platform/oauth/connect/',
+               token_url: '/oauth/access_token/', token_method: :get }
+
+      option :authorize_params, { scope: 'user_info' }
+      option :token_params, { parse: :json }
 
       # You may specify that your strategy should use PKCE by setting
       # the pkce option to true: https://tools.ietf.org/html/rfc7636
-      option :pkce, true
+      # option :pkce, true
 
       # These are called after authentication has succeeded. If
       # possible, you should try to set the UID without making
@@ -38,7 +42,7 @@ module OmniAuth
 
       extra do
         {
-          'raw_info' => raw_info['data']
+          raw_info: raw_info['data']
         }
       end
 
@@ -47,12 +51,8 @@ module OmniAuth
         @uid ||= access_token['openid']
         @raw_info ||= access_token.get('/oauth/userinfo/', params: { 'openid' => @uid },
                                                            parse: :json).parsed
-      end
-
-      def authorize_params
-        super.tap do |params|
-          params[:scope] = 'user_info'
-        end
+      rescue StandardError => e
+        raise e
       end
 
       private
