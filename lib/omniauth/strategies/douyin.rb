@@ -1,4 +1,5 @@
 require 'omniauth-oauth2'
+require 'omniauth/douyin/access_token'
 
 module OmniAuth
   module Strategies
@@ -54,16 +55,14 @@ module OmniAuth
       end
 
       extra do
-        {
-          raw_info: raw_info['data']
-        }
+        { raw_info: raw_info }
       end
 
       # @see https://open.douyin.com/platform/doc/6848806527751489550
       def raw_info
         @uid ||= access_token['openid']
         @raw_info ||= access_token.get('/oauth/userinfo/', params: { 'openid' => @uid },
-                                                           parse: :json).parsed
+                                                           parse: :json).parsed['data']
       rescue StandardError => e
         raise e
       end
@@ -83,7 +82,7 @@ module OmniAuth
           'grant_type' => 'authorization_code',
           'redirect_uri' => callback_url
         }.merge(token_params.to_hash(symbolize_keys: true))
-        client.get_token(params, deep_symbolize(options.auth_token_params))
+        client.get_token(params, deep_symbolize(options.auth_token_params), Omniauth::Douyin::AccessToken)
       end
     end
   end
